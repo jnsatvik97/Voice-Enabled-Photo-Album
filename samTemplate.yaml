@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: HW3 Photo Album
+Resources:
+  HW3LF1:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: hw3lf1
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      CodeUri: ./lf1/lambda_function.py
+      Description: 'Generates labels for images'
+      MemorySize: 128
+      Timeout: 30
+      Role: 'arn:aws:iam::157934964394:role/service-role/lf1-custom-role'
+      Environment:
+        Variables:
+          REGION: us-east-1
+
+
+  HW3LF2:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: hw3lf2
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      CodeUri: ./lf2/lambda_function.py
+      Description: 'Returns Image URLs'
+      MemorySize: 128
+      Timeout: 30
+      Role: 'arn:aws:iam::157934964394:role/lambda_vpc_basic_execution'
+      Events:
+        ajy6zr9ep2:
+          Type: Api
+          Properties:
+            Path: /search
+            Method: get
+      Environment:
+        Variables:
+          REGION: us-east-1
+          
+          
+  HW3LF3:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: hw3lf3
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      CodeUri: ./lf3/lambda_function.py
+      Description: 'For Transcribe'
+      MemorySize: 128
+      Timeout: 30
+      Role: 'arn:aws:iam::157934964394:role/service-role/lf3-role-chulr1hi'
+      Events:
+        ajy6zr9ep2:
+          Type: Api
+          Properties:
+            Path: /transcriber
+            Method: post
+      Environment:
+        Variables:
+          REGION: us-east-1
+
+
+  HW3LF4:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: hw3lf4
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      CodeUri: ./lf4/lambda_function.py
+      Description: 'For uploading images'
+      MemorySize: 128
+      Timeout: 30
+      Role: 'arn:aws:iam::157934964394:role/service-role/lf4-role-z7935dai'
+      Events:
+        ajy6zr9ep2:
+          Type: Api
+          Properties:
+            Path: /photos/{folder}/{item}
+            Method: put
+      Environment:
+        Variables:
+          REGION: us-east-1
+
+
+  ElasticsearchDomain:
+    Type: AWS::Elasticsearch::Domain
+    Properties:
+      DomainName: "photo-album-cf"
+      ElasticsearchVersion: '7.4'
+      ElasticsearchClusterConfig:
+        DedicatedMasterEnabled: "False"
+        InstanceCount: "2"
+        ZoneAwarenessEnabled: "true"
+        InstanceType: "t2.small.elasticsearch"
+      EBSOptions:
+        EBSEnabled: true
+        Iops: 0
+        VolumeSize: 10
+        VolumeType: "gp2"
+      SnapshotOptions:
+        AutomatedSnapshotStartHour: "0"
+      AccessPolicies:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action: 'es:*'
+            Resource: 'arn:aws:es:us-east-1:157934964394:domain/photo-album-cf/*'
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: "true"
+
+  S3B4V3K4:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'hw3-frontend-ac4624'
+
+  S3BSCT4:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'hw3-audio-ac4624'
+
+  S3B57HAV:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: 'hw3-photos-ac4624'
